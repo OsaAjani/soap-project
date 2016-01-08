@@ -8,7 +8,7 @@
 
 	//On définit les chemins
         define('PWD', '/var/www/soap-project/'); //On défini le chemin de base du site
-	define('HTTP_PWD', (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost') . '/'); //On défini l'adresse url du site
+	define('HTTP_PWD', (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost') . '/soap-project/'); //On défini l'adresse url du site
 
 	define('PWD_IMG', PWD . 'img/'); //Chemin dossier des images
 	define('HTTP_PWD_IMG', HTTP_PWD . 'img/'); //URL dossier des images
@@ -37,7 +37,7 @@
 
 	//Réglages des identifiants de base de données
 	define('DATABASE_HOST', 'localhost'); //Hote de la bdd
-	define('DATABASE_NAME', 'soap-project_example'); //Nom de la bdd
+	define('DATABASE_NAME', 'soap-project'); //Nom de la bdd
 	define('DATABASE_USER', 'root'); //Utilisateur de la bdd
 	define('DATABASE_PASSWORD', ''); //Password de l'utilisateur
 
