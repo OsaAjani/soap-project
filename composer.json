@@ -1,6 +1,8 @@
 {
     "name": "soap-project",
     "description": "",
-    "require": {},
+    "require": {
+        "videlalvaro/php-amqplib": "2.5.*"
+    },
     "license": ""
 }
