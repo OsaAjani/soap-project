@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS driver
 CREATE TABLE IF NOT EXISTS truck
 (
 	id INT NOT NULL AUTO_INCREMENT,
-	immatriculation VARCHAR(25) NOT NULL,
+	matriculation VARCHAR(25) NOT NULL,
 	PRIMARY KEY (id)
 );
 
@@ -22,10 +22,10 @@ CREATE TABLE IF NOT EXISTS path
 	id INT NOT NULL AUTO_INCREMENT,
 	driver_id INT NOT NULL,
 	truck_id INT NOT NULL,
-	start_latitude DOUBLE(9,6) NOT NULL,
-	start_longitude DOUBLE(9,6) NOT NULL,
-	end_latitude DOUBLE(9,6) NOT NULL,
-	end_longitude DOUBLE(9,6) NOT NULL,
+	start_latitude DOUBLE(10,7) NOT NULL,
+	start_longitude DOUBLE(10,7) NOT NULL,
+	end_latitude DOUBLE(10,7) NOT NULL,
+	end_longitude DOUBLE(10,7) NOT NULL,
 	status INT NOT NULL,
 	start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	end_date TIMESTAMP,
@@ -46,10 +46,9 @@ CREATE TABLE IF NOT EXISTS position
 (
 	id INT NOT NULL AUTO_INCREMENT,
 	path_id INT NOT NULL,
-	latitude DOUBLE(9,6) NOT NULL,
-	longitude DOUBLE(9,6) NOT NULL,
+	latitude DOUBLE(10,7) NOT NULL,
+	longitude DOUBLE(10,7) NOT NULL,
 	at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	matriculation VARCHAR(25) NOT NULL,
 	PRIMARY KEY (id),
 	CONSTRAINT fk_position_path FOREIGN KEY (path_id) REFERENCES path(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
