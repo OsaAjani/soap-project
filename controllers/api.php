@@ -20,9 +20,12 @@ class api extends ApiController
 		$channel = $connection->channel();
 
 		$channel->queue_declare('change_status', false, true, false, false);
-		$data = $idPath . "," . $status;
+		$data = array(
+			'path_id' => $idPath,
+			'status' => $status
+		);
 		
-		$msg = new AMQPMessage($data,
+		$msg = new AMQPMessage(json_encode($data),
         	array('delivery_mode' => 2) # make message persistent
         );
 
@@ -30,11 +33,42 @@ class api extends ApiController
 
 		$channel->close();
 		$connection->close();
+
 		return $this->autoHttpCode();
 	}
 
-	public function postPostion ($idPath, $latitude, $longitude, $at)
+	public function postPosition ($idPath, $latitude, $longitude, $at) //$at au Format timestamp
 	{
+		global $db;
+
+		if(!$db->getFromTableWhere('path', ['id' => $idPath]))
+		{
+			return $this->autoHttpCode(false);
+		}
+
+		$timestamp = new \DateTime();
+		$timestamp->setTimestamp($at);
+
+		$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+		$channel = $connection->channel();
+
+		$channel->queue_declare('post_position', false, true, false, false);
+		$data = array(
+			'path_id' 	=> $idPath,
+			'latitude' 	=> $latitude,
+			'longitude' => $longitude,
+			'at' 		=> $timestamp->format("Y-m-d G:i:s")
+		);
+		
+		$msg = new AMQPMessage(json_encode($data),
+        	array('delivery_mode' => 2) # make message persistent
+        );
+
+		$channel->basic_publish($msg, '', 'post_position');
+
+		$channel->close();
+		$connection->close();
+
 		return $this->autoHttpCode();
 	}
 
@@ -70,10 +104,8 @@ class api extends ApiController
 
 		$callback = function($msg){
 			global $db;
-			$params = explode(",", $msg->body);
-			$idPath = $params[0];
-			$status = $params[1];
-			$db->updateTableWhere('path', ['status' => $status], ['id' => $idPath]);
+			$params = json_decode($msg->body, true);
+			$db->updateTableWhere('path', ['status' => $params["status"]], ['id' => $params["path_id"]]);
    			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 		};
 
@@ -88,9 +120,29 @@ class api extends ApiController
 		$connection->close();
 	}
 
-	public function _workerPostition ()
+	public function _workerPosition ()
 	{
+		$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+		$channel = $connection->channel();
 
+		$channel->queue_declare('post_position', false, true, false, false);
+
+		$callback = function($msg){
+			global $db;
+			$position = json_decode($msg->body, true);
+			$db->insertIntoTable('position', $position);
+   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+		};
+
+		$channel->basic_qos(null, 1, null);
+		$channel->basic_consume('post_position', '', false, false, false, false, $callback);
+
+		while(count($channel->callbacks)) {
+    		$channel->wait();
+		}
+
+		$channel->close();
+		$connection->close();
 	}
 
 }
