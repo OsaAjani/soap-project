@@ -12,4 +12,10 @@
 			'FIX' => 4,
 			'END' => 5
 		);
+
+		public static $urlApiRaspiSms = '';
+
+		public static $userRaspiSms = '';
+
+		public static $passwordRaspiSms = '';
 	}
