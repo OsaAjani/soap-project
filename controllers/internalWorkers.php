@@ -84,7 +84,6 @@
 				if ($static == true)
 				{
 					// ENVOYER SMS CONDUCTEUR
-					echo 'static';
 				}
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 			};
