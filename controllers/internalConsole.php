@@ -23,7 +23,8 @@
 					$channel->queue_declare('check_truck', false, true, false, false);
 					$data = array(
 						'path_id' 	=> $path['id'],
-						'truck'		=> $path['truck_id']
+						'truck'		=> $path['truck_id'],
+						'driver'	=> $path['driver_id']
 					);
 					
 					$msg = new AMQPMessage(json_encode($data),

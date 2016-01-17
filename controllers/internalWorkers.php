@@ -15,8 +15,21 @@
 				global $db;
 				$params = json_decode($msg->body, true);
 
-				//IF STATUS == 3 (DOWN) SEND SMS TO REPAIRER
+				if ($params['status'] == 3)
+				{
+					//SELECT repairer
+					$message = '';
+					$headers = array();
+					$body = array(
+						'email' => internalConstants::$urlApiRaspiSms,
+						'password' => internalConstants::$urlApiRaspiSms,
+						'numbers' => $repairer['number'],
+						'text' => $message
+					);
 
+					Unirest\Request::post(internalConstants::$urlApiRaspiSms, $headers, $body);
+				}
+				
 				$db->updateTableWhere('path', ['status' => $params['status']], ['id' => $params['path_id']]);
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 			};
@@ -69,7 +82,7 @@
 				$path = json_decode($msg->body, true);
 				$now = new \DateTime();
 				$now->sub(new \DateInterval('PT5M'));
-				$positions = $db->getFromTableWhere('position', ['>at' => $now->format('Y-m-d H:i:s')]);
+				$positions = $db->getFromTableWhere('position', ['>at' => $now->format('Y-m-d H:i:s')]); //AJOUTER CONDITION SUR PATH
 				$static = true;
 				$previousLongitude = $positions[0]['longitude'];
 				$previousLatitude = $positions[0]['latitude'];
@@ -81,10 +94,22 @@
 						break;
 					}
 				}
+
 				if ($static == true)
 				{
-					// ENVOYER SMS CONDUCTEUR
+					$driver = $db->getFromTableWhere('driver', ['id' => $path['driver']]);
+					$message = '';
+					$headers = array();
+					$body = array(
+						'email' => internalConstants::$urlApiRaspiSms,
+						'password' => internalConstants::$urlApiRaspiSms,
+						'numbers' => $driver[0]['phone'],
+						'text' => $message
+					);
+
+					Unirest\Request::post(internalConstants::$urlApiRaspiSms, $headers, $body);
 				}
+
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 			};
 
