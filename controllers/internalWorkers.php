@@ -29,6 +29,10 @@
 
 					Unirest\Request::post(internalConstants::$urlApiRaspiSms, $headers, $body);
 				}
+				else if ($params['status'] == 5)
+				{
+					//SET END TIME PATH
+				}
 				
 				$db->updateTableWhere('path', ['status' => $params['status']], ['id' => $params['path_id']]);
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
