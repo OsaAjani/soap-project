@@ -26,7 +26,7 @@
 	# MODEL #
 	#########
 	//On va appeler un modèle, est l'initialiser
-	$db = new Model($bdd);
+	$db = new DataBase($bdd);
 
 	###########
 	# ROUTAGE #

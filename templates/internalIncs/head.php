@@ -14,7 +14,7 @@
 			<link rel="stylesheet" type="text/css" href="<?php echo HTTP_PWD_CSS; ?>bootstrap.min.css" />
 			<link rel="stylesheet" type="text/css" href="<?php echo HTTP_PWD_CSS; ?>bootstrap-theme.min.css" />
 			<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700" />
-			<link rel="stylesheet" type="text/css" href="<?php echo HTTP_PWD_CSS; ?>font-awesome.min.css" />
+			<link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" />
 			<link rel="stylesheet" type="text/css" href="<?php echo HTTP_PWD_CSS; ?>bootstrap-slider.css" />
 			<link rel="stylesheet" type="text/css" href="<?php echo HTTP_PWD_CSS; ?>responsive-font.min.css" />
 			<link rel="stylesheet" type="text/css" href="<?php echo HTTP_PWD_CSS; ?>style.css" />

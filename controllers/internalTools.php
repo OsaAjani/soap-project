@@ -165,4 +165,85 @@
 
 			return $pagination;
 		}
+
+		/**
+		 * Cette fonction retourne une adresse depuis une Latitude et une Longitude (on exploite openstreetmap)
+		 * @param float $latitude : la latitude
+		 * @param floaat $longitude : la longitude
+		 * @return string : L'adresse sous forme de chaine
+		 */
+		public static function getAdressFromLatitudeAndLongitude ($latitude, $longitude)
+		{
+			$url = 'http://nominatim.openstreetmap.org/reverse?format=json&zoom=18&lat=' . rawurlencode($latitude) . '&lon=' . rawurlencode($longitude);
+
+			//On ouvre une ressource CURL pour récupérer une page
+			$curl = curl_init();
+			curl_setopt($curl, CURLOPT_URL, $url);
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		
+			//On recupère la page
+			$json = curl_exec($curl);
+		
+			curl_close($curl); //On ferme CURL
+
+			$fullAddress = json_decode($json);
+
+			$address = $fullAddress->address->house_number . ' ' . $fullAddress->address->pedestrian . ' ' . $fullAddress->address->city . ' ' . $fullAddress->address->postcode;
+
+			return $address;
+		}
+
+		/**
+		 * Cette fonction retourne l'icone pour le statut d'un path
+		 * @param int $pathStatus : Le status du path
+		 * @return string : La chaine qui contiendra l'icone
+		 */
+		public static function getIconForPathStatus ($pathStatus)
+		{
+			switch (true)
+			{
+				case $pathStatus == internalConstants::$pathStatus['WAIT'] :
+					return '<span class="fa fa-home"></span>';		
+					break;
+				case $pathStatus == internalConstants::$pathStatus['RUN'] :
+					return '<span class="fa fa-road"></span>';		
+					break;
+				case $pathStatus == internalConstants::$pathStatus['BREAK'] :
+					return '<span class="fa fa-food"></span>';		
+					break;
+				case $pathStatus == internalConstants::$pathStatus['DOWN'] :
+					return '<span class="fa fa-chain-broken"></span>';		
+					break;
+				case $pathStatus == internalConstants::$pathStatus['FIX'] :
+					return '<span class="fa fa-wrench"></span>';		
+					break;
+				case $pathStatus == internalConstants::$pathStatus['END'] :
+					return '<span class="fa fa-flag-checkered"></span>';		
+					break;
+			}
+		}
+
+		/**
+		 * Cette fonction retourne l'icone pour le statut d'une intervention
+		 * @param int $interventionStatus : Le status de l'intervention
+		 * @return string : La chaine qui contiendra l'icone
+		 */
+		public static function getIconForInterventionStatus ($interventionStatus)
+		{
+			switch (true)
+			{
+				case $interventionStatus == internalConstants::$interventionStatus['WAIT'] :
+					return '<span class="fa fa-clock-o"></span>';		
+					break;
+				case $interventionStatus == internalConstants::$interventionStatus['RUN'] :
+					return '<span class="fa fa-wrench"></span>';		
+					break;
+				case $interventionStatus == internalConstants::$interventionStatus['END'] :
+					return '<span class="fa fa-check"></span>';		
+					break;
+				case $interventionStatus == internalConstants::$interventionStatus['REFUSED'] :
+					return '<span class="fa fa-times"></span>';		
+					break;
+			}
+		}
 	}

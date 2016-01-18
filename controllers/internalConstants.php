@@ -12,4 +12,14 @@
 			'FIX' => 4,
 			'END' => 5
 		);
+
+		/**
+		 * Liste des status d'une intervention
+		 */
+		public static $interventionStatus = array(
+			'WAIT' => 0,
+			'RUN' => 1,
+			'END' => 2,
+			'REFUSED' => 3
+		);
 	}

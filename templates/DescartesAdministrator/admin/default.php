@@ -1,5 +1,5 @@
 <?php
-	
+	$gestion = new gestion();
 	$incs = new internalIncs();
 	$incs->head('Accueil');
 ?>
@@ -12,8 +12,12 @@
 				<div class="col-lg-12">
 					<h2 class="section-title">Administration</h2>
 				</div>
-				<div class="col-lg-12">
-				<p>Bienvenu dans l'administration !</p>
+				<div class="row">
+					<?php $gestion->runningTrucks(); ?>
+					<?php $gestion->brokenTrucks(); ?>
+				</div>
+				<div class="row">
+					<?php $gestion->currentInterventions(); ?>
 				</div>
 			</div>
 		</div> <!-- /.row -->
