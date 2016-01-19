@@ -1,7 +1,10 @@
 <?php
 	use PhpAmqpLib\Connection\AMQPStreamConnection;
 	use PhpAmqpLib\Message\AMQPMessage;
-
+	//SELECT REPAIRER TO SEND SMS
+	//TXT SMS
+	//ANALYSE RECEPTION SMS FROM REPAIRER
+	//LOGS
 	class internalWorkers extends Controller
 	{
 		public function _status ()
@@ -19,19 +22,14 @@
 				{
 					//SELECT repairer
 					$message = '';
-					$headers = array();
-					$body = array(
-						'email' => internalConstants::$urlApiRaspiSms,
-						'password' => internalConstants::$urlApiRaspiSms,
-						'numbers' => $repairer['number'],
-						'text' => $message
-					);
+					$sms = new internalSms();
+					$sms->send($repairer['number'], $message);
 
-					Unirest\Request::post(internalConstants::$urlApiRaspiSms, $headers, $body);
 				}
 				else if ($params['status'] == 5)
 				{
-					//SET END TIME PATH
+					$now = new \DateTime();
+					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s'), ['id' => $params['path_id']]);
 				}
 				
 				$db->updateTableWhere('path', ['status' => $params['status']], ['id' => $params['path_id']]);
@@ -84,9 +82,9 @@
 			$callback = function($msg){
 				global $db;
 				$path = json_decode($msg->body, true);
-				$now = new \DateTime();
-				$now->sub(new \DateInterval('PT5M'));
-				$positions = $db->getFromTableWhere('position', ['>at' => $now->format('Y-m-d H:i:s')]); //AJOUTER CONDITION SUR PATH
+				$limit = new \DateTime();
+				$limit->sub(new \DateInterval('PT5M'));
+				$positions = $db->getFromTableWhere('position', ['>at' => $limit->format('Y-m-d H:i:s'), 'path_id' => $path['id']]);
 				$static = true;
 				$previousLongitude = $positions[0]['longitude'];
 				$previousLatitude = $positions[0]['latitude'];
@@ -103,15 +101,8 @@
 				{
 					$driver = $db->getFromTableWhere('driver', ['id' => $path['driver']]);
 					$message = '';
-					$headers = array();
-					$body = array(
-						'email' => internalConstants::$urlApiRaspiSms,
-						'password' => internalConstants::$urlApiRaspiSms,
-						'numbers' => $driver[0]['phone'],
-						'text' => $message
-					);
-
-					Unirest\Request::post(internalConstants::$urlApiRaspiSms, $headers, $body);
+					$sms = new internalSms();
+					$sms->send($driver[0]['phone'], $message);
 				}
 
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);

@@ -2,8 +2,7 @@
     "name": "soap-project",
     "description": "",
     "require": {
-        "videlalvaro/php-amqplib": "2.5.*",
-        "mashape/unirest-php": "2.*"
+        "videlalvaro/php-amqplib": "2.5.*"
     },
     "license": ""
 }
