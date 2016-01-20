@@ -37,4 +37,29 @@
 				$connection->close();
 			}	
 		}
+
+		/**
+		 * Cette fonction permet d'appeler la vérification des interventions des reparateurs
+		 */
+		public function checkInterventionResponse () 
+		{
+			global $db;
+			
+			if (!$interventions = $db->getFromTableWhere('intervention', ['status' => internalConstants::$interventionStatus['WAIT']]))
+			{
+				return false;
+			}
+
+			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+			$channel = $connection->channel();
+			$channel->queue_declare('check_intervention', false, true, false, false);
+
+			foreach ($interventions as $intervention) {
+				$msg = new AMQPMessage(json_encode($intervention), ['delivery_mode' => 2]);
+				$channel->basic_publish($msg, '', 'check_intervention');
+			}
+
+			$channel->close();
+			$connection->close();
+		}
 	}

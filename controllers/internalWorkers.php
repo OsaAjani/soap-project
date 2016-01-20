@@ -7,7 +7,7 @@
 	//LOGS
 	class internalWorkers extends Controller
 	{
-		public function _status ()
+		public function status ()
 		{
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
@@ -29,7 +29,7 @@
 				else if ($params['status'] == 5)
 				{
 					$now = new \DateTime();
-					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s'), ['id' => $params['path_id']]);
+					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s'), ['id' => $params['path_id']]]);
 				}
 				
 				$db->updateTableWhere('path', ['status' => $params['status']], ['id' => $params['path_id']]);
@@ -47,7 +47,7 @@
 			$connection->close();
 		}
 
-		public function _position ()
+		public function position ()
 		{
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
@@ -72,7 +72,7 @@
 			$connection->close();
 		}
 
-		public function _checkTruck () 
+		public function checkTruck () 
 		{
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
@@ -113,6 +113,51 @@
 
 			while(count($channel->callbacks)) {
 	    		$channel->wait();
+			}
+
+			$channel->close();
+			$connection->close();
+		}
+
+		/**
+		 * Cette fonction prend une intervention qui n'a pas reçue de réponse et vérifie si elle doit être annulée
+		 */
+		public function checkIntervention ()
+		{
+			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+			$channel = $connection->channel();
+
+			$channel->queue_declare('check_intervention', false, true, false, false);
+
+			$callback = function($msg) {
+				global $db;
+				$intervention = json_decode($msg->body, true);
+
+				$limit = new DateTime();
+				$limit->sub(new DateInterval('PT5M'));
+				
+				$interventionStartDate = new DateTime($intervention['start_date']);
+
+				//Si ça fait plus de 5 minutes qu'on à lancé la demande d'intervention
+				if ($limit < $interventionStartDate)
+				{
+					$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+					return true;
+				}
+
+				//On va passé l'intervention en annulée
+				$intervention['status'] = internalConstants::$interventionStatus['REFUSED'];
+				$intervention['end_date'] = new DateTime();
+				$intervention['end_date'] = $intervention['end_date']->format('Y-m-d H:i:s');
+				$db->updateTableWhere('intervention', $intervention, ['id' => $intervention['id']]);
+	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+			};
+
+			$channel->basic_qos(null, 1, null);
+			$channel->basic_consume('check_intervention', '', false, false, false, false, $callback);
+
+			while(count($channel->callbacks)) {
+				$channel->wait();
 			}
 
 			$channel->close();
