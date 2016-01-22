@@ -17,6 +17,7 @@ class gestion extends Controller
 	 */
 	public function runningTrucks ()
 	{
+		global $logger;
 		global $db;
 		$logger->log('info', 'Access Back Office, get all running trucks');
 
@@ -43,6 +44,7 @@ class gestion extends Controller
 	 */
 	public function brokenTrucks ()
 	{
+		global $logger;
 		global $db;
 		$logger->log('info', 'Access Back Office, get all broken trucks');
 
@@ -83,6 +85,7 @@ class gestion extends Controller
 	 */
 	public function currentInterventions ()
 	{
+		global $logger;
 		global $db;
 		$logger->log('info', 'Access Back Office, get all current interventions');
 
@@ -115,6 +118,7 @@ class gestion extends Controller
 	 */
 	public function askForIntervention ($pathId, $repairerId)
 	{
+		global $logger;
 		global $db;
 		$logger->log('info', 'Access Back Office, ask for intervention for path id : ' . $pathId . ' and repairer id : ' . $repairerId);
 
@@ -190,9 +194,12 @@ class gestion extends Controller
 	 */
 	public function webhookValidateIntervention ($key)
 	{
+		global $logger;
 		global $db;
+
 		if ($key != '7Jl2ESGU5wQZeVzD9ZkuQA26VBYorI9J')
 		{
+			$logger->log('error', 'Webhook validate intervention invalid key : ' . $key);
 			return false;
 		}
 
