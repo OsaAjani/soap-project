@@ -205,7 +205,7 @@
 					return '<span class="fa fa-road"></span>';		
 					break;
 				case $pathStatus == internalConstants::$pathStatus['BREAK'] :
-					return '<span class="fa fa-food"></span>';		
+					return '<span class="fa fa-cutlery"></span>';		
 					break;
 				case $pathStatus == internalConstants::$pathStatus['DOWN'] :
 					return '<span class="fa fa-chain-broken"></span>';		
