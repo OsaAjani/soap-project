@@ -15,10 +15,9 @@
 				global $logger;
 				global $db;
 				$params = json_decode($msg->body, true);
-
+				$path = $db->getFromTableWhere('path', ['id' => $params['path_id']]);
 				if ($params['status'] == 1)
 				{
-					$path = $db->getFromTableWhere('path', ['id' => $params['path_id']]);
 					if ($path[0]['status'] == 0)
 					{
 						$logger->log('info', 'Worker - The path with id : ' . $path[0]['id'] . ' start');
@@ -32,7 +31,7 @@
 					$now = new \DateTime();
 					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s')], ['id' => $params['path_id']]);
 				}
-				$logger->log('info', 'Worker - The path with id : ' . $path[0]['id'] . ' has new status : ' . array_search($status, internalConstants::$pathStatus));
+				$logger->log('info', 'Worker - The path with id : ' . $path[0]['id'] . ' has new status : ' . array_search($params['status'], internalConstants::$pathStatus));
 				$db->updateTableWhere('path', ['status' => $params['status']], ['id' => $params['path_id']]);
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 			};
@@ -87,7 +86,7 @@
 				$path = json_decode($msg->body, true);
 				$limit = new \DateTime();
 				$limit->sub(new \DateInterval('PT5M'));
-				$positions = $db->getFromTableWhere('position', ['>at' => $limit->format('Y-m-d H:i:s'), 'path_id' => $path['id']]);
+				$positions = $db->getFromTableWhere('position', ['>at' => $limit->format('Y-m-d H:i:s'), 'path_id' => $path['path_id']]);
 				if (count($positions) < 2)
 				{
 					return true;
