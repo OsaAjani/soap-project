@@ -56,6 +56,11 @@ class gestion extends Controller
 				unset($paths[$key]);
 				continue;
 			}
+			if ($db->getFromTableWhere('intervention', ['path_id' => $path['id'], 'status' => internalConstants::$interventionStatus['RUN']]))
+			{
+				unset($paths[$key]);
+				continue;
+			}
 
 			$path['truck'] = $db->getFromTableWhere('truck', ['id' => $path['truck_id']])[0];
 			$path['driver'] = $db->getFromTableWhere('driver', ['id' => $path['driver_id']])[0];
@@ -124,6 +129,7 @@ class gestion extends Controller
 		{
 			if ($availablesRepairer['id'] == $repairerId)
 			{
+				$repairer = $availablesRepairer;
 				$isAvailable = true;
 				break;
 			}
@@ -161,8 +167,81 @@ class gestion extends Controller
 			"Pour valider l'intervention, renvoyez le SMS suivant à ce numéro : 'intervention:" . $interventionId . ":ok'\n" .
 			"\n" .
 			"Si vous n'avez pas répondu d'ici 5 minutes l'intervention sera annulée.";	
+			
+		$internalSms = new internalSms();
+		$internalSms->sendSmsToNumber($text, $repairer['phone']);
 
 		echo $retourOk;
+		return true;
+	}
+
+	/**
+	 * Cette fonction permet de valider une intervention par SMS pour un repairer
+	 * @param string $key : La clef du webhook
+	 */
+	public function webhookValidateIntervention ($key)
+	{
+		global $db;
+		if ($key != '7Jl2ESGU5wQZeVzD9ZkuQA26VBYorI9J')
+		{
+			return false;
+		}
+
+		if (!isset($_POST['content'], $_POST['send_by']))
+		{
+			return false;
+		}
+
+		$smsText = explode(':', str_replace('\n', '', trim($_POST['content'])));
+
+		if (count($smsText) < 3)
+		{
+			return false;
+		}
+
+		if ($smsText[0] != 'intervention')
+		{
+			return false;
+		}
+
+		if (!$interventions = $db->getFromTableWhere('intervention', ['id' => $smsText[1]]))
+		{
+			return false;
+		}
+		$intervention = $interventions[0];
+
+		if ($intervention['status'] != internalConstants::$interventionStatus['WAIT'] && $intervention['status'] != internalConstants::$interventionStatus['RUN'])
+		{
+			return false;
+		}
+
+		if ($smsText[2] == 'ok')
+		{
+			$intervention['status'] = internalConstants::$interventionStatus['RUN'];
+
+			$text = 'L\'intervention N°' . $intervention['id'] . ' a bien été validée. Quand vous aurez réparé la panne, envoyez le message suivant à ce numéro : "intervention:' . $intervention['id'] . ':finish"';
+			$internalSms = new internalSms();
+			$internalSms->sendSmsToNumber($text, $_POST['send_by']);
+		}
+		else if ($smsText[2] == 'finish')
+		{
+			$date = new DateTime();
+			$date = $date->format('Y-m-d H:i:s');
+			$intervention['end_date'] = $date;
+			$intervention['status'] = internalConstants::$interventionStatus['END'];
+
+			$paths = $db->updateTableWhere('path', ['status' => internalConstants::$pathStatus['RUN']], ['id' => $intervention['path_id']]);
+
+			$text = 'L\'intervention N°' . $intervention['id'] . ' a bien été terminée. Merci.';
+			$internalSms = new internalSms();
+			$internalSms->sendSmsToNumber($text, $_POST['send_by']);
+		}
+		else
+		{
+			return false;
+		}
+
+		$db->updateTableWhere('intervention', $intervention, ['id' => $intervention['id']]);
 		return true;
 	}
 }

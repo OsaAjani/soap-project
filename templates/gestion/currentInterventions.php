@@ -1,4 +1,4 @@
-<div class="col-xs-12">
+<div class="col-xs-12" id="currentInterventionsBlock">
 	<div class="panel panel-default">
 		<div class="panel-heading">Interventions en cours</div>
 		<div class="panel-body">

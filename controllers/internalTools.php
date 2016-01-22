@@ -174,7 +174,7 @@
 		 */
 		public static function getAdressFromLatitudeAndLongitude ($latitude, $longitude)
 		{
-			$url = 'http://nominatim.openstreetmap.org/reverse?format=json&zoom=18&lat=' . rawurlencode($latitude) . '&lon=' . rawurlencode($longitude);
+			$url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' . rawurlencode($latitude) . ',' . rawurlencode($longitude) . '&key=AIzaSyD93B70eg2gattBfd6QrSSL3aFQds01zbg';
 
 			//On ouvre une ressource CURL pour récupérer une page
 			$curl = curl_init();
@@ -183,14 +183,10 @@
 		
 			//On recupère la page
 			$json = curl_exec($curl);
-		
 			curl_close($curl); //On ferme CURL
+			$fullAddress = json_decode($json, true);
 
-			$fullAddress = json_decode($json);
-
-			$address = $fullAddress->address->house_number . ' ' . $fullAddress->address->pedestrian . ' ' . $fullAddress->address->city . ' ' . $fullAddress->address->postcode;
-
-			return $address;
+			return (isset($fullAddress['results'][0]['formatted_address']) ? $fullAddress['results'][0]['formatted_address'] : 'Inconnue (Latitude : ' . $latitude . ' Longitude : ' . $longitude . ')');
 		}
 
 		/**

@@ -1,4 +1,4 @@
-<div class="col-xs-12 col-md-6">
+<div class="col-xs-12 col-md-6" id="brokenTrucksBlock">
 	<div class="panel panel-default">
 		<div class="panel-heading">Camions en panne</div>
 		<div class="panel-body">
@@ -15,7 +15,7 @@
 								<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Appeler un réparateur <span class="caret"></span></button>
 								<ul class="dropdown-menu pull-right" role="menu">
 									<?php foreach ($repairers as $repairer) { ?>
-										<li><a href="<?php secho($this->generateUrl('gestion', 'askForIntervention', [$path['id'], $repairer['id']])); ?>"><?php secho($repairer['name']); ?></a></li>
+										<li><a class="ajaxLink" href="<?php secho($this->generateUrl('gestion', 'askForIntervention', [$path['id'], $repairer['id']])); ?>"><?php secho($repairer['name']); ?></a></li>
 									<?php } ?>
 								</ul>
 							</div>

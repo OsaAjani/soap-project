@@ -23,5 +23,16 @@
 		</div> <!-- /.row -->
 	</div> <!-- /.container -->
 </div> <!-- /.section -->
+<script>
+	jQuery('document').ready(function($)
+	{
+		instanciateAjaxBlocks();
+		jQuery('body').on('click', '.ajaxLink', function (e){
+			e.preventDefault();
+			jQuery.get(jQuery(this).attr('href'));
+			reloadAjaxBlocks();
+		});
+	});
+</script>
 <?php
 	$incs->footer();

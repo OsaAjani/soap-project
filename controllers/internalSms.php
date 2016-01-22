@@ -5,9 +5,9 @@
 	class internalSms extends Controller
 	{
 
-		const adminEmail = '';
-		const adminPassword = '';
-		const url = 'http://ajanibx.noip.me/RaspiSMS/smsAPI/';
+		const adminEmail = 'admin@example.fr';
+		const adminPassword = 'admin';
+		const url = 'http://192.168.1.13/RaspiSMS/smsAPI/';
 
 		/**
 		 * Cette classe permet d'envoyer un SMS à un numéro
@@ -19,15 +19,15 @@
 		{
 			//On ouvre une ressource CURL pour récupérer une page
 			$curl = curl_init();
-			curl_setopt($curl, CURLOPT_URL, $this->url);
+			curl_setopt($curl, CURLOPT_URL, self::url);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 			
-			curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-				'email' => $this->adminEmail,
-				'password' => $this->adminPassword,
+			curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query(array(
+				'email' => self::adminEmail,
+				'password' => self::adminPassword,
 				'numbers' => $number,
 				'text' => $text,
-			));
+			)));
 
 
 			//On recupère la page
@@ -37,6 +37,6 @@
 
 			$json = json_decode($json);
 
-			return !(boolean) $json->error;
+			return !((boolean) $json->error);
 		}
 	}

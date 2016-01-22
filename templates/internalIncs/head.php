@@ -26,8 +26,12 @@
 		<?php if (!ENV_PRODUCTION) { ?>
 			<script type="text/javascript" src="<?php echo HTTP_PWD_JS; ?>jquery-2.1.1.min.js"></script>
 			<script type="text/javascript" src="<?php echo HTTP_PWD_JS; ?>bootstrap.min.js"></script>
+			<script type="text/javascript" src="<?php echo $this->generateUrl('phptojs'); ?>"></script>
+			<script type="text/javascript" src="<?php echo HTTP_PWD_JS; ?>custom.js"></script>
 		<?php } else { ?>
+			<script type="text/javascript" src="<?php echo $this->generateUrl('phptojs'); ?>"></script>
 			<script type="text/javascript" src="<?php echo $this->generateUrl('minify', 'js'); ?>"></script>
+			<script type="text/javascript" src="<?php echo HTTP_PWD_JS; ?>custom.js"></script>
 		<?php } ?>
 		
 	</head>
