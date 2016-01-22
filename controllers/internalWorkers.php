@@ -12,6 +12,7 @@
 			$channel->queue_declare('change_status', false, true, false, false);
 
 			$callback = function($msg){
+				global $logger;
 				global $db;
 				$params = json_decode($msg->body, true);
 
@@ -20,16 +21,18 @@
 					$path = $db->getFromTableWhere('path', ['id' => $params['path_id']]);
 					if ($path[0]['status'] == 0)
 					{
+						$logger->log('info', 'Worker - The path with id : ' . $path[0]['id'] . ' start');
 						$now = new \DateTime();
 						$db->updateTableWhere('path', ['start_date' => $now->format('Y-m-d H:i:s')], ['id' => $params['path_id']]);
 					}
 				}
 				else if ($params['status'] == 5)
 				{
+					$logger->log('info', 'Worker - The path with id : ' . $path[0]['id'] . ' is finished');
 					$now = new \DateTime();
 					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s')], ['id' => $params['path_id']]);
 				}
-				
+				$logger->log('info', 'Worker - The path with id : ' . $path[0]['id'] . ' has new status : ' . array_search($status, internalConstants::$pathStatus));
 				$db->updateTableWhere('path', ['status' => $params['status']], ['id' => $params['path_id']]);
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 			};
@@ -52,9 +55,10 @@
 
 			$channel->queue_declare('post_position', false, true, false, false);
 			$callback = function($msg){
+				global $logger;
 				global $db;
 				$position = json_decode($msg->body, true);
-				var_dump($position);
+				$logger->log('info', 'Worker - insert new geolocation : ' . json_encode($position));
 				$db->insertIntoTable('position', $position);
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 			};
@@ -78,6 +82,7 @@
 			$channel->queue_declare('check_truck', false, true, false, false);
 
 			$callback = function($msg){
+				global $logger;
 				global $db;
 				$path = json_decode($msg->body, true);
 				$limit = new \DateTime();
@@ -97,8 +102,10 @@
 
 				if ($static == true)
 				{
+					$logger->log('info', 'Worker - Truck for the path with id : ' . $path['id'] . 'is static');
 					$driver = $db->getFromTableWhere('driver', ['id' => $path['driver']]);
 					$message = 'Nous avons détecté une immobilité de votre véhicule depuis plus de 5 minutes, Merci d\'informer le status de votre trajet via l\'application';
+					$logger->log('info', 'Worker - Send SMS to driver with id ' . $driver[0]['id'] . ' (' . $driver[0]['phone'] . ') with message : ' . $message);
 					$sms = new internalSms();
 					$sms->send($driver[0]['phone'], $message);
 				}
@@ -128,7 +135,10 @@
 			$channel->queue_declare('check_intervention', false, true, false, false);
 
 			$callback = function($msg) {
+				global $logger;
 				global $db;
+
+				$logger->log('info', 'Worker - Check intervention');
 				$intervention = json_decode($msg->body, true);
 
 				$limit = new DateTime();
@@ -136,14 +146,16 @@
 				
 				$interventionStartDate = new DateTime($intervention['start_date']);
 
-				//Si ça fait plus de 5 minutes qu'on à lancé la demande d'intervention
+				//Si ça fait moins de 5 minutes qu'on à lancé la demande d'intervention
 				if ($limit < $interventionStartDate)
 				{
+					$logger->log('info', 'Worker - ask intervention for less than 5 minutes for intervention with id : ' . $intervention['id']);
 					$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 					return true;
 				}
 
 				//On va passé l'intervention en annulée
+				$logger->log('info', 'Worker - intervention with id . ' . $intervention['id'] . ' is refused');
 				$intervention['status'] = internalConstants::$interventionStatus['REFUSED'];
 				$intervention['end_date'] = new DateTime();
 				$intervention['end_date'] = $intervention['end_date']->format('Y-m-d H:i:s');

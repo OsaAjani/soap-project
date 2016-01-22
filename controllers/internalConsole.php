@@ -10,8 +10,10 @@
 	{
 		public function checkStaticTruck () 
 		{
+			global $logger;
 			global $db;
 			
+			$logger->log('info', 'Script check static truck');
 			$pathsInProgress = $db->getFromTableWhere('path', ['status' => internalConstants::$pathStatus['RUN']]);
 			
 			if (count($pathsInProgress))
@@ -45,7 +47,10 @@
 		 */
 		public function checkInterventionResponse () 
 		{
+			global $logger;
 			global $db;
+
+			$logger->log('info', 'Script check intervention response');
 			
 			if (!$interventions = $db->getFromTableWhere('intervention', ['status' => internalConstants::$interventionStatus['WAIT']]))
 			{

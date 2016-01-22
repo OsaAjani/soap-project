@@ -16,6 +16,7 @@
 		
 		public function byDefault()
 		{
+			global $logger;
 			if (!empty($_POST['login']) && !empty($_POST['password']))
 			{
 				$pseudo = $_POST['login'];
@@ -23,6 +24,7 @@
 				
 				if ($pseudo == DESCARTESADMINISTRATOR_LOGIN && $password == DESCARTESADMINISTRATOR_PASSWORD)
 				{
+					$logger->log('info', 'Admin is connected');
 					$_SESSION['connect'] = true;
 					header('Location: ' . $this->generateUrl("admin"));
 					return true;
