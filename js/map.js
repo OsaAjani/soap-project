@@ -7,16 +7,18 @@ map = new google.maps.Map(document.getElementById('map'), {
 });
 
 var markerStore = {};
+var missingMarkers;
 function getMarkers()
 {
 	$.get(HTTP_PWD + 'gestion/getTrucksLastPositions', {}, function(res,resp) {
+		missingMarkers = naiveShallowCopy(markerStore);
 		for(var i=0, len=res.length; i<len; i++) {
-
 			//marker already exist, move it
 			if (markerStore.hasOwnProperty(res[i].matriculation))
 			{
 				var newPosition = new google.maps.LatLng(res[i].latitude, res[i].longitude);
 				markerStore[res[i].matriculation].setPosition(newPosition);
+				delete missingMarkers[res[i].matriculation];
 			}
 			else //marker not exist, create it
 			{
@@ -29,6 +31,15 @@ function getMarkers()
 			}
 		}
 		
+		for (var property in missingMarkers)
+		{
+			if (missingMarkers.hasOwnProperty(property))
+			{
+				markerStore[property].setMap(null);
+				delete markerStore[property];
+			}
+		}
+
 		window.setTimeout(getMarkers, INTERVAL);
 	}, "json");
 }

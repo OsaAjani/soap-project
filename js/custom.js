@@ -45,3 +45,20 @@ function instanciateAjaxBlocks ()
 {
 	reloadAjaxBlocksInterval = setInterval(reloadAjaxBlocks, 15000);
 }
+
+/**
+ * Cette fonction permet le clone d'un object
+ */
+function naiveShallowCopy( original )  
+{
+	var clone = {} ;
+
+	var key ;
+
+	for ( key in original )
+	{
+			clone[ key ] = original[ key ] ;
+	}
+
+	return clone ;
+}
