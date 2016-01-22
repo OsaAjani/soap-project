@@ -1,7 +1,7 @@
 <?php
 	use PhpAmqpLib\Connection\AMQPStreamConnection;
 	use PhpAmqpLib\Message\AMQPMessage;
-	
+
 	class internalWorkers extends Controller
 	{
 		public function status ()
@@ -15,15 +15,7 @@
 				global $db;
 				$params = json_decode($msg->body, true);
 
-				if ($params['status'] == 3)
-				{
-					//SELECT repairer
-					$message = '';
-					$sms = new internalSms();
-					$sms->send($repairer['number'], $message);
-
-				}
-				else if ($params['status'] == 5)
+				if ($params['status'] == 5)
 				{
 					$now = new \DateTime();
 					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s')], ['id' => $params['path_id']]);
@@ -97,7 +89,7 @@
 				if ($static == true)
 				{
 					$driver = $db->getFromTableWhere('driver', ['id' => $path['driver']]);
-					$message = '';
+					$message = 'Nous avons détecté une immobilité de votre véhicule depuis plus de 5 minutes, Merci d\'informer le status de votre trajet via l\'application';
 					$sms = new internalSms();
 					$sms->send($driver[0]['phone'], $message);
 				}
