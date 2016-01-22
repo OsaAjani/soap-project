@@ -18,6 +18,7 @@ class gestion extends Controller
 	public function runningTrucks ()
 	{
 		global $db;
+		$logger->log('info', 'Access Back Office, get all running trucks');
 
 		//On recupère les trajets qui roule ou son en pause
 		$paths = $db->getRunOrBreakPaths();
@@ -43,6 +44,7 @@ class gestion extends Controller
 	public function brokenTrucks ()
 	{
 		global $db;
+		$logger->log('info', 'Access Back Office, get all broken trucks');
 
 		//On recupere les trajets en panne ou qui son en cours de réparation
 		$paths = $db->getFromTableWhere('path', ['status' => internalConstants::$pathStatus['DOWN']]);
@@ -82,6 +84,7 @@ class gestion extends Controller
 	public function currentInterventions ()
 	{
 		global $db;
+		$logger->log('info', 'Access Back Office, get all current interventions');
 
 		//On recupère les interventions en cours
 		$interventions = $db->getWaitOrRunInterventions();
@@ -113,11 +116,14 @@ class gestion extends Controller
 	public function askForIntervention ($pathId, $repairerId)
 	{
 		global $db;
+		$logger->log('info', 'Access Back Office, ask for intervention for path id : ' . $pathId . ' and repairer id : ' . $repairerId);
+
 		$retourOk = json_encode(['success' => true]);
 		$retourKo = json_encode(['success' => false]);
 
 		if (!$db->getFromTableWhere('path', ['id' => $pathId]))
 		{
+			$logger->log('warning', 'No path with id ' . $pathId . ' find in database');
 			echo $retourKo;
 			return false;
 		}
@@ -137,6 +143,7 @@ class gestion extends Controller
 
 		if (!$isAvailable)
 		{
+			$logger->log('warning', 'repairer with id : ' . $repairerId . ' isn\'t available');
 			echo $retourKo;
 			return false;
 		}
@@ -149,6 +156,7 @@ class gestion extends Controller
 
 		if (!$db->insertIntoTable('intervention', $intervention))
 		{
+			$logger->log('error', 'can\'t save intevention : ' . json_encode($intervention));
 			echo $retourKo;
 			return false;
 		}
@@ -167,7 +175,8 @@ class gestion extends Controller
 			"Pour valider l'intervention, renvoyez le SMS suivant à ce numéro : 'intervention:" . $interventionId . ":ok'\n" .
 			"\n" .
 			"Si vous n'avez pas répondu d'ici 5 minutes l'intervention sera annulée.";	
-			
+		
+		$logger->log('info', 'Send SMS to repairer id : ' . $repairer['id'] . ' (' . $repairer['phone'] . ') with message : ' . $text);	
 		$internalSms = new internalSms();
 		$internalSms->sendSmsToNumber($text, $repairer['phone']);
 

@@ -9,12 +9,16 @@
 	{
 		public function putStatus ($idPath, $status)
 		{
+			global $logger;
 			global $db;
 
 			if(!in_array($status, internalConstants::$pathStatus)|| !$db->getFromTableWhere('path', ['id' => $idPath]))
 			{
+				$logger->log('warning', 'Request API PUT Status - No path with id ' . $idPath . ' find in database OR status ' . $status . ' doesn\'t exist');
 				return $this->autoHttpCode(false);
 			}
+
+			$logger->log('info', 'Request API PUT Status with path id ' . $idPath . ' and new status : ' . array_search($status, internalConstants::$pathStatus));
 
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
@@ -39,15 +43,19 @@
 
 		public function postPosition ($idPath, $latitude, $longitude, $at) //$at au Format timestamp
 		{
+			global $logger;
 			global $db;
 
 			if(!$db->getFromTableWhere('path', ['id' => $idPath]))
 			{
+				$logger->log('warning', 'Request API POST Position - No path with id ' . $idPath . ' find in database');
 				return $this->autoHttpCode(false);
 			}
 
 			$timestamp = new \DateTime();
 			$timestamp->setTimestamp($at);
+
+			$logger->log('info', 'Request API PUT Status with path id : ' . $idPath . ', latitude : ' . $latitude . ', longitude : ' . $longitude . ' at ' . $timestamp->format('Y-m-d G:i:s'));
 
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
@@ -74,12 +82,16 @@
 
 		public function getPath ($idPath)
 		{
+			global $logger;
 			global $db;
-
+			
 			if(!$path = $db->getFromTableWhere('path', ['id' => $idPath]))
 			{
+				$logger->log('warning', 'Request API GET Path - No path with id ' . $idPath . ' find in database');
 				return $this->autoHttpCode(false);
 			}
+
+			$logger->log('info', 'Request API GET Path with id ' . $idPath);
 
 			$path = $path[0];
 			
