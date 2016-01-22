@@ -23,6 +23,7 @@
 	#########
 	//On va appeler un modèle, est l'initialiser
 	$db = new Model($bdd);
+	$logger = new DescartesLogger\Logger();
 	
 	###########
 	# ROUTAGE #
