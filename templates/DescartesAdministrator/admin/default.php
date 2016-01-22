@@ -27,18 +27,8 @@
 		</div> <!-- /.row -->
 	</div> <!-- /.container -->
 </div> <!-- /.section -->
-<script>
-	var map;
-	function initMap()
-	{
-		map = new google.maps.Map(document.getElementById('map'), {
-			center: {lat: 46.768196, lng: 2.4326639},
-			zoom: 7
-		});
-	}
-
-</script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB-SExd1Yer7Cn4IZnrvBjw4Mo7LGbCZao&callback=initMap"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB-SExd1Yer7Cn4IZnrvBjw4Mo7LGbCZao"></script>
+<script src="<?php echo HTTP_PWD_JS; ?>map.js"></script>
 <script>
 	jQuery('document').ready(function($)
 	{
