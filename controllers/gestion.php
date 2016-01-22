@@ -234,10 +234,20 @@ class gestion extends Controller
 		if ($smsText[2] == 'ok')
 		{
 			$intervention['status'] = internalConstants::$interventionStatus['RUN'];
+			$db->updateTableWhere('path', ['status' => internalConstants::$pathStatus['FIX']], ['id' => $intervention['path_id']]);
+
 
 			$text = 'L\'intervention N°' . $intervention['id'] . ' a bien été validée. Quand vous aurez réparé la panne, envoyez le message suivant à ce numéro : "intervention:' . $intervention['id'] . ':finish"';
 			$internalSms = new internalSms();
 			$internalSms->sendSmsToNumber($text, $_POST['send_by']);
+
+			if ($paths = $db->getFromTableWhere('path', ['id' => $intervention['path_id']]))
+			{
+				$path = $paths[0];
+				$driver = $db->getFromTableWhere('driver', ['id' => $path['driver_id']])[0];
+				$textDriver = 'Un reparateur viens de vous prendre en charge, il arrivera sous peu.';
+				$internalSms->sendSmsToNumber($textDriver, $driver['phone']);
+			}
 		}
 		else if ($smsText[2] == 'finish')
 		{
@@ -245,8 +255,6 @@ class gestion extends Controller
 			$date = $date->format('Y-m-d H:i:s');
 			$intervention['end_date'] = $date;
 			$intervention['status'] = internalConstants::$interventionStatus['END'];
-
-			$paths = $db->updateTableWhere('path', ['status' => internalConstants::$pathStatus['RUN']], ['id' => $intervention['path_id']]);
 
 			$text = 'L\'intervention N°' . $intervention['id'] . ' a bien été terminée. Merci.';
 			$internalSms = new internalSms();
