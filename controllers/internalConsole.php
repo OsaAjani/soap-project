@@ -26,9 +26,10 @@
 				foreach ($pathsInProgress as $path) {
 					
 					$data = array(
-						'path_id' 	=> $path['id'],
-						'truck'		=> $path['truck_id'],
-						'driver'	=> $path['driver_id']
+						'path_id' 		=> $path['id'],
+						'sms_static'	=> $path['sms_static'], 
+						'truck'			=> $path['truck_id'],
+						'driver'		=> $path['driver_id']
 					);
 					
 					$msg = new AMQPMessage(json_encode($data),
