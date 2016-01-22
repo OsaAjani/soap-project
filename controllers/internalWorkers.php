@@ -1,10 +1,7 @@
 <?php
 	use PhpAmqpLib\Connection\AMQPStreamConnection;
 	use PhpAmqpLib\Message\AMQPMessage;
-	//SELECT REPAIRER TO SEND SMS
-	//TXT SMS
-	//ANALYSE RECEPTION SMS FROM REPAIRER
-	//LOGS
+
 	class internalWorkers extends Controller
 	{
 		public function status ()
@@ -18,18 +15,19 @@
 				global $db;
 				$params = json_decode($msg->body, true);
 
-				if ($params['status'] == 3)
+				if ($params['status'] == 1)
 				{
-					//SELECT repairer
-					$message = '';
-					$sms = new internalSms();
-					$sms->send($repairer['number'], $message);
-
+					$path = $db->getFromTableWhere('path', ['id' => $params['path_id']]);
+					if ($path[0]['status'] == 0)
+					{
+						$now = new \DateTime();
+						$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s')], ['id' => $params['path_id']]);
+					}
 				}
 				else if ($params['status'] == 5)
 				{
 					$now = new \DateTime();
-					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s'), ['id' => $params['path_id']]]);
+					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s')], ['id' => $params['path_id']]);
 				}
 				
 				$db->updateTableWhere('path', ['status' => $params['status']], ['id' => $params['path_id']]);
@@ -53,10 +51,10 @@
 			$channel = $connection->channel();
 
 			$channel->queue_declare('post_position', false, true, false, false);
-
 			$callback = function($msg){
 				global $db;
 				$position = json_decode($msg->body, true);
+				var_dump($position);
 				$db->insertIntoTable('position', $position);
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 			};
@@ -100,7 +98,7 @@
 				if ($static == true)
 				{
 					$driver = $db->getFromTableWhere('driver', ['id' => $path['driver']]);
-					$message = '';
+					$message = 'Nous avons détecté une immobilité de votre véhicule depuis plus de 5 minutes, Merci d\'informer le status de votre trajet via l\'application';
 					$sms = new internalSms();
 					$sms->send($driver[0]['phone'], $message);
 				}
