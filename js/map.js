@@ -2,7 +2,8 @@ var map;
 var INTERVAL = 10000;
 map = new google.maps.Map(document.getElementById('map'), {
 	center: {lat: 46.768196, lng: 2.4326639},
-	zoom: 7
+	zoom: 7,
+	scrollwheel: false
 });
 
 var markerStore = {};
