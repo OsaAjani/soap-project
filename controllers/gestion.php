@@ -199,12 +199,13 @@ class gestion extends Controller
 
 		if ($key != '7Jl2ESGU5wQZeVzD9ZkuQA26VBYorI9J')
 		{
-			$logger->log('error', 'Webhook validate intervention invalid key : ' . $key);
+			$logger->log('warning', 'Webhook validate intervention invalid key : ' . $key);
 			return false;
 		}
 
 		if (!isset($_POST['content'], $_POST['send_by']))
 		{
+			$logger->log('warning', 'Webhook validate intervention no content message or no sender');
 			return false;
 		}
 
@@ -212,27 +213,32 @@ class gestion extends Controller
 
 		if (count($smsText) < 3)
 		{
+			$logger->log('warning', 'Webhook validate intervention less than 3 block in SMS');
 			return false;
 		}
 
 		if ($smsText[0] != 'intervention')
 		{
+			$logger->log('warning', 'Webhook validate intervention block 0 different than intervention');
 			return false;
 		}
 
 		if (!$interventions = $db->getFromTableWhere('intervention', ['id' => $smsText[1]]))
 		{
+			$logger->log('warning', 'Webhook validate intervention no intervention find in database with id : ' . $smsText[1]);
 			return false;
 		}
 		$intervention = $interventions[0];
 
 		if ($intervention['status'] != internalConstants::$interventionStatus['WAIT'] && $intervention['status'] != internalConstants::$interventionStatus['RUN'])
 		{
+			$logger->log('warning', 'Webhook validate intervention si WAIT or RUN');
 			return false;
 		}
 
 		if ($smsText[2] == 'ok')
 		{
+			$logger->log('info', 'Webhook validate intervention - validation for intervention with id : ' . $intervention['id']);
 			$intervention['status'] = internalConstants::$interventionStatus['RUN'];
 
 			$text = 'L\'intervention N°' . $intervention['id'] . ' a bien été validée. Quand vous aurez réparé la panne, envoyez le message suivant à ce numéro : "intervention:' . $intervention['id'] . ':finish"';
@@ -241,6 +247,7 @@ class gestion extends Controller
 		}
 		else if ($smsText[2] == 'finish')
 		{
+			$logger->log('info', 'Webhook validate intervention - intervention with id : ' . $intervention['id'] . ' is finished');
 			$date = new DateTime();
 			$date = $date->format('Y-m-d H:i:s');
 			$intervention['end_date'] = $date;
@@ -254,6 +261,7 @@ class gestion extends Controller
 		}
 		else
 		{
+			$logger->log('error', 'Webhook validate intervention');
 			return false;
 		}
 
@@ -266,7 +274,9 @@ class gestion extends Controller
 	 */
 	public function getTrucksLastPositions ()
 	{
+		global $logger;
 		global $db;
+		$logger->log('info', 'Access Back Office, get last positions of trucks');
 
 		$return = [];
 
