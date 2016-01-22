@@ -88,6 +88,10 @@
 				$limit = new \DateTime();
 				$limit->sub(new \DateInterval('PT5M'));
 				$positions = $db->getFromTableWhere('position', ['>at' => $limit->format('Y-m-d H:i:s'), 'path_id' => $path['id']]);
+				if (count($positions) < 2)
+				{
+					return true;
+				}
 				$static = true;
 				$previousLongitude = $positions[0]['longitude'];
 				$previousLatitude = $positions[0]['latitude'];
