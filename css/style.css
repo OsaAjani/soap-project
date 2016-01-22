@@ -140,3 +140,9 @@ h3
 {
 	margin-top: 30px;
 }
+
+/* GOOGLE MAP */
+#map
+{
+	height: 75vh;
+}

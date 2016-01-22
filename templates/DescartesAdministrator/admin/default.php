@@ -9,6 +9,10 @@
 	<div class="section admin-section">
 		<div class="container">
 			<div class="row">
+				<div id="map"></div>
+			</div>
+			<hr/>
+			<div class="row">
 				<div class="col-lg-12">
 					<h2 class="section-title">Administration</h2>
 				</div>
@@ -23,6 +27,8 @@
 		</div> <!-- /.row -->
 	</div> <!-- /.container -->
 </div> <!-- /.section -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB-SExd1Yer7Cn4IZnrvBjw4Mo7LGbCZao"></script>
+<script src="<?php echo HTTP_PWD_JS; ?>map.js"></script>
 <script>
 	jQuery('document').ready(function($)
 	{

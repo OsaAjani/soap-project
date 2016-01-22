@@ -253,4 +253,32 @@ class gestion extends Controller
 		$db->updateTableWhere('intervention', $intervention, ['id' => $intervention['id']]);
 		return true;
 	}
+
+	/**
+	 * Cette fonction retourne la dernière position de chaque camion qui roule et son nom
+	 */
+	public function getTrucksLastPositions ()
+	{
+		global $db;
+
+		$return = [];
+
+		//On recupère les trajets qui roule ou son en pause
+		$paths = $db->getRunOrBreakPaths();
+
+		//On recupère les camion liés
+		foreach ($paths as $key => $path)
+		{
+			$truck = $db->getFromTableWhere('truck', ['id' => $path['truck_id']])[0];
+			if (!$position = $db->getFromTableWhere('position', ['path_id' => $path['id']], $order_by = 'at', $desc = true, $limit = 1))
+			{
+				continue;
+			}
+			$position = $position[0];
+			
+			$return[] = ['matriculation' => $truck['matriculation'], 'latitude' => $position['latitude'], 'longitude' => $position['longitude']];
+		}
+
+		echo json_encode($return);
+	}
 }
