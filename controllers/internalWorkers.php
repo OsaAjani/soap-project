@@ -15,7 +15,16 @@
 				global $db;
 				$params = json_decode($msg->body, true);
 
-				if ($params['status'] == 5)
+				if ($params['status'] == 1)
+				{
+					$path = $db->getFromTableWhere('path', ['id' => $params['path_id']]);
+					if ($path[0]['status'] == 0)
+					{
+						$now = new \DateTime();
+						$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s')], ['id' => $params['path_id']]);
+					}
+				}
+				else if ($params['status'] == 5)
 				{
 					$now = new \DateTime();
 					$db->updateTableWhere('path', ['end_date' => $now->format('Y-m-d H:i:s')], ['id' => $params['path_id']]);
