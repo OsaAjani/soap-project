@@ -19,8 +19,10 @@
 				$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 				$channel = $connection->channel();
 
+				$channel->queue_declare('check_truck', false, true, false, false);
+
 				foreach ($pathsInProgress as $path) {
-					$channel->queue_declare('check_truck', false, true, false, false);
+					
 					$data = array(
 						'path_id' 	=> $path['id'],
 						'truck'		=> $path['truck_id'],
@@ -30,7 +32,7 @@
 					$msg = new AMQPMessage(json_encode($data),
 			        	array('delivery_mode' => 2) # make message persistent
 			        );
-						$channel->basic_publish($msg, '', 'check_truck');
+					$channel->basic_publish($msg, '', 'check_truck');
 				}
 
 				$channel->close();
