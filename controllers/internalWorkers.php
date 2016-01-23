@@ -100,23 +100,23 @@
 					{
 						if ($path['sms_static'])
 						{
-							$db->updateTableWhere('path', ['sms_static' => false], ['id' => $params['path_id']]);
+							$db->updateTableWhere('path', ['sms_static' => false], ['id' => $path['path_id']]);
 						}
 						$logger->log('info', 'Worker - Truck for the path with id : ' . $path['id'] . 'isn\'t static');
 						$static = false;
 						break;
 					}
 				}
-
+				
 				if ($static == true && !$path['sms_static'])
 				{
-					$db->updateTableWhere('path', ['sms_static' => true], ['id' => $params['path_id']]);
-					$logger->log('info', 'Worker - Truck for the path with id : ' . $path['id'] . 'is static');
+					$db->updateTableWhere('path', ['sms_static' => true], ['id' => $path['path_id']]);
+					$logger->log('info', 'Worker - Truck for the path with id : ' . $path['path_id'] . 'is static');
 					$driver = $db->getFromTableWhere('driver', ['id' => $path['driver']]);
 					$message = 'Nous avons détecté une immobilité de votre véhicule depuis plus de 5 minutes, Merci d\'informer le status de votre trajet via l\'application';
 					$logger->log('info', 'Worker - Send SMS to driver with id ' . $driver[0]['id'] . ' (' . $driver[0]['phone'] . ') with message : ' . $message);
 					$sms = new internalSms();
-					$sms->send($driver[0]['phone'], $message);
+					$sms->sendSmsToNumber($message,$driver[0]['phone']);
 				}
 
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
