@@ -89,7 +89,7 @@
 				$positions = $db->getFromTableWhere('position', ['>at' => $limit->format('Y-m-d H:i:s'), 'path_id' => $path['path_id']]);
 				if (count($positions) < 2)
 				{
-					$logger->('warning', 'no position since 5 minutes for path with id : ' . $path['path_id']);
+					$logger->log('warning', 'no position since 5 minutes for path with id : ' . $path['path_id']);
 					return true;
 				}
 				$static = true;
