@@ -77,12 +77,10 @@
 		{
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
-			$channel->queue_declare('check_truck', false, true, false, false);
-
+			$channel->queue_declare('check_static_truck', false, true, false, false);
 			$callback = function($msg){
 				global $logger;
 				global $db;
-				$logger->log('debug','Worker check Truck called');
 				$path = json_decode($msg->body, true);
 				$limit = new \DateTime();
 				$limit->sub(new \DateInterval('PT5M'));
@@ -90,44 +88,44 @@
 				if (count($positions) < 2)
 				{
 					$logger->log('warning', 'no position since 5 minutes for path with id : ' . $path['path_id']);
-					return true;
 				}
-				$static = true;
-				$previousLongitude = $positions[0]['longitude'];
-				$previousLatitude = $positions[0]['latitude'];
-				foreach ($positions as $position) 
+				else
 				{
-					if ($position['longitude'] != $previousLongitude || $position['latitude'] != $previousLatitude)
+					$static = true;
+					$previousLongitude = $positions[0]['longitude'];
+					$previousLatitude = $positions[0]['latitude'];
+					foreach ($positions as $position) 
 					{
-						if ($path['sms_static'])
+						if ($position['longitude'] != $previousLongitude || $position['latitude'] != $previousLatitude)
 						{
-							$db->updateTableWhere('path', ['sms_static' => false], ['id' => $path['path_id']]);
+							if ($path['sms_static'])
+							{
+								$db->updateTableWhere('path', ['sms_static' => false], ['id' => $path['path_id']]);
+							}
+							$logger->log('info', 'Worker - Truck for the path with id : ' . $path['path_id'] . 'isn\'t static');
+							$static = false;
+							break;
 						}
-						$logger->log('info', 'Worker - Truck for the path with id : ' . $path['path_id'] . 'isn\'t static');
-						$static = false;
-						break;
+					}
+					if ($static == true && !$path['sms_static'])
+					{
+						$db->updateTableWhere('path', ['sms_static' => true], ['id' => $path['path_id']]);
+						$logger->log('info', 'Worker - Truck for the path with id : ' . $path['path_id'] . 'is static');
+						$driver = $db->getFromTableWhere('driver', ['id' => $path['driver']]);
+						$message = 'Nous avons détecté une immobilité de votre véhicule depuis plus de 5 minutes, Merci d\'informer le status de votre trajet via l\'application';
+						$logger->log('info', 'Worker - Send SMS to driver with id ' . $driver[0]['id'] . ' (' . $driver[0]['phone'] . ') with message : ' . $message);
+						$sms = new internalSms();
+						$sms->sendSmsToNumber($message,$driver[0]['phone']);
 					}
 				}
-				
-				if ($static == true && !$path['sms_static'])
-				{
-					$db->updateTableWhere('path', ['sms_static' => true], ['id' => $path['path_id']]);
-					$logger->log('info', 'Worker - Truck for the path with id : ' . $path['path_id'] . 'is static');
-					$driver = $db->getFromTableWhere('driver', ['id' => $path['driver']]);
-					$message = 'Nous avons détecté une immobilité de votre véhicule depuis plus de 5 minutes, Merci d\'informer le status de votre trajet via l\'application';
-					$logger->log('info', 'Worker - Send SMS to driver with id ' . $driver[0]['id'] . ' (' . $driver[0]['phone'] . ') with message : ' . $message);
-					$sms = new internalSms();
-					$sms->sendSmsToNumber($message,$driver[0]['phone']);
-				}
-
 	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 			};
 
 			$channel->basic_qos(null, 1, null);
-			$channel->basic_consume('check_truck', '', false, false, false, false, $callback);
+			$channel->basic_consume('check_static_truck', '', false, false, false, false, $callback);
 
 			while(count($channel->callbacks)) {
-	    		$channel->wait();
+	    			$channel->wait();
 			}
 
 			$channel->close();
@@ -153,7 +151,7 @@
 
 				$limit = new DateTime();
 				$limit->sub(new DateInterval('PT5M'));
-				
+
 				$interventionStartDate = new DateTime($intervention['start_date']);
 
 				//Si ça fait moins de 5 minutes qu'on à lancé la demande d'intervention
@@ -161,16 +159,16 @@
 				{
 					$logger->log('info', 'Worker - ask intervention for less than 5 minutes for intervention with id : ' . $intervention['id']);
 					$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-					return true;
 				}
-
-				//On va passé l'intervention en annulée
-				$logger->log('info', 'Worker - intervention with id . ' . $intervention['id'] . ' is refused');
-				$intervention['status'] = internalConstants::$interventionStatus['REFUSED'];
-				$intervention['end_date'] = new DateTime();
-				$intervention['end_date'] = $intervention['end_date']->format('Y-m-d H:i:s');
-				$db->updateTableWhere('intervention', $intervention, ['id' => $intervention['id']]);
-	   			$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+				else //On va passé l'intervention en annulée
+				{
+					$logger->log('info', 'Worker - intervention with id . ' . $intervention['id'] . ' is refused');
+					$intervention['status'] = internalConstants::$interventionStatus['REFUSED'];
+					$intervention['end_date'] = new DateTime();
+					$intervention['end_date'] = $intervention['end_date']->format('Y-m-d H:i:s');
+					$db->updateTableWhere('intervention', $intervention, ['id' => $intervention['id']]);
+	   				$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
+				}
 			};
 
 			$channel->basic_qos(null, 1, null);

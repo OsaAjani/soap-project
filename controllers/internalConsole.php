@@ -23,7 +23,7 @@
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
 
-			$channel->queue_declare('check_truck', false, true, false, false);
+			$channel->queue_declare('check_static_truck', false, true, false, false);
 
 			foreach ($pathsInProgress as $path) {
 
@@ -35,9 +35,9 @@
 				);
 				$logger->log('debug','call worker with path : ' . json_encode($data));
 				$msg = new AMQPMessage(json_encode($data),
-		        	array('delivery_mode' => 2) # make message persistent
-		        );
-				$channel->basic_publish($msg, '', 'check_truck');
+		        		array('delivery_mode' => 2) # make message persistent
+		        	);
+				$channel->basic_publish($msg, '', 'check_static_truck');
 			}
 			
 			$channel->close();
