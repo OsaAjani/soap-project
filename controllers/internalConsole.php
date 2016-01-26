@@ -5,7 +5,6 @@
 	use PhpAmqpLib\Connection\AMQPStreamConnection;
 	use PhpAmqpLib\Message\AMQPMessage;
 
-
 	class internalConsole extends Controller
 	{
 		public function checkStaticTruck () 
@@ -16,31 +15,34 @@
 			$logger->log('info', 'Script check static truck');
 			$pathsInProgress = $db->getFromTableWhere('path', ['status' => internalConstants::$pathStatus['RUN']]);
 			
-			if (count($pathsInProgress))
-			{
-				$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
-				$channel = $connection->channel();
+			if (!count($pathsInProgress))
+			{	
+				$logger->log('info', 'no path in progess');
+				return false;
+			}
 
-				$channel->queue_declare('check_truck', false, true, false, false);
-
-				foreach ($pathsInProgress as $path) {
-					
-					$data = array(
-						'path_id' 		=> $path['id'],
-						'sms_static'	=> $path['sms_static'], 
-						'truck'			=> $path['truck_id'],
-						'driver'		=> $path['driver_id']
-					);
-					
-					$msg = new AMQPMessage(json_encode($data),
-			        	array('delivery_mode' => 2) # make message persistent
-			        );
-					$channel->basic_publish($msg, '', 'check_truck');
-				}
-
-				$channel->close();
-				$connection->close();
-			}	
+			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+			$channel = $connection->channel();
+			$channel->queue_declare('check_truck', false, true, false, false);
+			
+			foreach ($pathsInProgress as $path) {
+			
+				$data = array(
+					'path_id' 		=> $path['id'],
+					'sms_static'	=> $path['sms_static'], 
+					'truck'			=> $path['truck_id'],
+					'driver'		=> $path['driver_id']
+				);
+				
+				$msg = new AMQPMessage(json_encode($data),
+		        	array('delivery_mode' => 2) # make message persistent
+		        );
+				$channel->basic_publish($msg, '', 'check_truck');
+			}
+			
+			$channel->close();
+			$connection->close();
+			
 		}
 
 		/**

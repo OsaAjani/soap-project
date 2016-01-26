@@ -51,8 +51,8 @@
 		{
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
-
 			$channel->queue_declare('post_position', false, true, false, false);
+
 			$callback = function($msg){
 				global $logger;
 				global $db;
@@ -77,7 +77,6 @@
 		{
 			$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 			$channel = $connection->channel();
-
 			$channel->queue_declare('check_truck', false, true, false, false);
 
 			$callback = function($msg){
