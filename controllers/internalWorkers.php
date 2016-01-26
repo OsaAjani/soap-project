@@ -82,6 +82,7 @@
 			$callback = function($msg){
 				global $logger;
 				global $db;
+				$logger->log('debug','Worker check Truck called');
 				$path = json_decode($msg->body, true);
 				$limit = new \DateTime();
 				$limit->sub(new \DateInterval('PT5M'));
