@@ -89,6 +89,7 @@
 				$positions = $db->getFromTableWhere('position', ['>at' => $limit->format('Y-m-d H:i:s'), 'path_id' => $path['path_id']]);
 				if (count($positions) < 2)
 				{
+					$logger->('warning', 'no position since 5 minutes for path with id : ' . $path['path_id']);
 					return true;
 				}
 				$static = true;
@@ -102,7 +103,7 @@
 						{
 							$db->updateTableWhere('path', ['sms_static' => false], ['id' => $path['path_id']]);
 						}
-						$logger->log('info', 'Worker - Truck for the path with id : ' . $path['id'] . 'isn\'t static');
+						$logger->log('info', 'Worker - Truck for the path with id : ' . $path['path_id'] . 'isn\'t static');
 						$static = false;
 						break;
 					}
