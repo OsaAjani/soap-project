@@ -163,10 +163,10 @@
 				else //On va passé l'intervention en annulée
 				{
 					$logger->log('info', 'Worker - intervention with id . ' . $intervention['id'] . ' is refused');
-					$intervention['status'] = internalConstants::$interventionStatus['REFUSED'];
-					$intervention['end_date'] = new DateTime();
-					$intervention['end_date'] = $intervention['end_date']->format('Y-m-d H:i:s');
-					$db->updateTableWhere('intervention', $intervention, ['id' => $intervention['id']]);
+					$newStatus = internalConstants::$interventionStatus['REFUSED'];
+					$newEndDate = new DateTime();
+					$newEndDate = $newEndDate->format('Y-m-d H:i:s');
+					$db->updateTableWhere('intervention', ['status' => $newStatus, 'end_date' => $newEndDate], ['id' => $intervention['id']]);
 	   				$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
 				}
 			};
